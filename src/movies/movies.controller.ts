@@ -3,14 +3,15 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
-  //   Query,
-  //   Put,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { Movie } from './entities/movie.entity';
+import { CreateMovieDto } from './dto/create-movie.dto';
+import { UpdateMovieDto } from './dto/update-movie.dto';
 
 @Controller('movies')
 export class MoviesController {
@@ -29,30 +30,28 @@ export class MoviesController {
 
   // Param 데코레이터로 path param 을 받아냄
   @Get(':id')
-  getOne(@Param('id') movieId: string): Movie {
-    return this.moviesService.getOne(movieId);
+  getOne(@Param('id') movieId: number): Movie {
+    const movie = this.moviesService.getOne(movieId);
+
+    if (!movie) {
+      throw new NotFoundException(`Movie with ID not found:${movieId}`);
+    }
+
+    return movie;
   }
 
   @Post()
-  createMovie(@Body() movieDto) {
-    // console.log(movieDto);
-    // return 'This will create movie';
+  createMovie(@Body() movieDto: CreateMovieDto) {
     return this.moviesService.createMovie(movieDto);
   }
 
   @Delete(':id')
-  deleteMovie(@Param('id') movieId: string) {
+  deleteMovie(@Param('id') movieId: number) {
     return this.moviesService.deleteOne(movieId);
   }
 
   @Patch(':id')
-  patchMovie(@Param('id') movieId: string, @Body() movieDto) {
-    return {
-      updateMovieId: movieId,
-      ...movieDto,
-    };
+  patchMovie(@Param('id') movieId: number, @Body() updateData: UpdateMovieDto) {
+    return this.moviesService.updateMovie(movieId, updateData);
   }
-
-  //   @Put('/:id')
-  //   updateMovie()
 }
