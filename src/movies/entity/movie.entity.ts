@@ -8,7 +8,7 @@ export class Movie extends BaseEntity {
   @Column({ type: 'varchar', length: 15 })
   title: string;
 
-  @Column('timestamp')
+  @Column('int')
   year: number;
 
   @Column({

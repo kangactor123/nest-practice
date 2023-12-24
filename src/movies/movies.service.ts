@@ -1,35 +1,42 @@
 import { Injectable } from '@nestjs/common';
-import { Movie } from './movie.entity';
-// import { CreateMovieDto } from './dto/create-movie.dto';
-// import { UpdateMovieDto } from './dto/update-movie.dto';
+import { Movie } from './entity/movie.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CreateMovieDto } from './dto/create-movie.dto';
+import { UpdateMovieDto } from './dto/update-movie.dto';
 
 @Injectable()
 export class MoviesService {
-  private movies: Movie[] = [];
+  constructor(
+    @InjectRepository(Movie) private readonly movieRepo: Repository<Movie>,
+  ) {}
 
-  getAll(): Movie[] {
-    return this.movies;
+  async getAll(): Promise<Movie[]> {
+    return await this.movieRepo.find();
   }
 
-  getOne(id: number): Movie {
-    return this.movies.find((movie) => movie.id === id);
+  // 한 개를 가져올 땐 findOneBy 메서드 사용
+  async getOne(id: number): Promise<Movie> {
+    // 조회해온 값이 없을 때 예외처리
+    // const movie = await this.movieRepo.findOneBy({ id });
+
+    // if (!movie) {
+    //   throw new NotFoundException('존재하지 않는 영화 Id');
+    // }
+    // return movie;
+    return await this.movieRepo.findOneByOrFail({ id });
   }
 
-  // createMovie(dto: CreateMovieDto) {
-  //   this.movies.push({
-  //     id: this.movies.length + 1,
-  //     ...dto,
-  //   });
-  // }
+  // 값을 insert 할 땐 save
+  async createMovie(dto: CreateMovieDto) {
+    return await this.movieRepo.save(dto);
+  }
 
-  // deleteOne(id: number) {
-  //   this.getOne(id);
-  //   this.movies = this.movies.filter((movie) => movie.id !== id);
-  // }
+  async deleteOne(id: number) {
+    return await this.movieRepo.delete({ id });
+  }
 
-  // updateMovie(id: number, updateData: UpdateMovieDto) {
-  //   const movie = this.getOne(id);
-  //   this.deleteOne(id);
-  //   this.movies.push({ ...movie, ...updateData });
-  // }
+  async updateMovie(id: number, updateData: UpdateMovieDto) {
+    return await this.movieRepo.update({ id }, updateData);
+  }
 }
